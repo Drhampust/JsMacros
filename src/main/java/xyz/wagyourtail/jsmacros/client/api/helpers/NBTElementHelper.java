@@ -220,10 +220,11 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
 
 
         /**
+         * not exist on <=1.15
          * @since 1.5.1
          */
         public int getHeldType() {
-            return base.getElementType();
+            return -1;
         }
     }
 
