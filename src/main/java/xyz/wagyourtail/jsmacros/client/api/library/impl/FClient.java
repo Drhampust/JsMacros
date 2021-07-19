@@ -2,7 +2,7 @@ package xyz.wagyourtail.jsmacros.client.api.library.impl;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConnectScreen;
-import net.minecraft.client.network.ServerAddress;
+import net.minecraft.network.ServerAddress;
 import xyz.wagyourtail.jsmacros.client.api.helpers.OptionsHelper;
 import xyz.wagyourtail.jsmacros.client.tick.TickSync;
 import xyz.wagyourtail.jsmacros.core.Core;
@@ -99,7 +99,7 @@ public class FClient extends BaseLibrary {
         mc.execute(() -> {
             if (mc.world != null) mc.world.disconnect();
             mc.joinWorld(null);
-            ConnectScreen.connect(null, mc, new ServerAddress(ip, port), null);
+            mc.openScreen(new ConnectScreen(null, mc, ip, port));
         });
     }
     
