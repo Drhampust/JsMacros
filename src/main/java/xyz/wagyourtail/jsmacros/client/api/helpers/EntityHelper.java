@@ -7,7 +7,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.MathHelper;
 import xyz.wagyourtail.jsmacros.client.api.sharedclasses.PositionCommon;
 import xyz.wagyourtail.jsmacros.core.helpers.BaseHelper;
@@ -70,7 +70,7 @@ public class EntityHelper<T extends Entity> extends BaseHelper<T> {
      * @return the {@code pitch} value of the entity.
      */
     public float getPitch() {
-        return base.getPitch();
+        return base.pitch;
     }
     
     /**
@@ -78,7 +78,7 @@ public class EntityHelper<T extends Entity> extends BaseHelper<T> {
      * @return the {@code yaw} value of the entity.
      */
     public float getYaw() {
-        return MathHelper.wrapDegrees(base.getYaw());
+        return MathHelper.wrapDegrees(base.yaw);
     }
     
     /**
@@ -144,8 +144,8 @@ public class EntityHelper<T extends Entity> extends BaseHelper<T> {
      * @return
      */
     public NBTElementHelper<?> getNBT() {
-        NbtCompound nbt = new NbtCompound();
-        base.saveSelfNbt(nbt);
+        CompoundTag nbt = new CompoundTag();
+        base.saveSelfToTag(nbt);
         return NBTElementHelper.resolve(nbt);
     }
     
