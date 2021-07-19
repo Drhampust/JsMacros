@@ -14,8 +14,6 @@ import xyz.wagyourtail.jsmacros.client.api.event.impl.EventEntityDamaged;
 public abstract class MixinLivingEntity {
     @Shadow public abstract float getHealth();
 
-    @Shadow protected abstract int computeFallDamage(float fallDistance, float damageMultiplier);
-
     @Inject(at = @At("TAIL"), method = "applyDamage")
     public void onDamage(DamageSource source, float amount, CallbackInfo ci) {
         new EventEntityDamaged((Entity)(Object) this, amount);
