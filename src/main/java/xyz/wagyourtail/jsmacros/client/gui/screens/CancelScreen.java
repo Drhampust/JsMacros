@@ -21,8 +21,8 @@ public class CancelScreen extends BaseScreen {
     private Scrollbar s;
     private final List<RunningContextContainer> running = new ArrayList<>();
 
-    public CancelScreen(Screen parent) {
-        super(new LiteralText("Cancel"), parent);
+    public CancelScreen(GuiScreen parent) {
+        super(new ChatComponentText("Cancel"), parent);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class CancelScreen extends BaseScreen {
         running.clear();
         s = this.addButton(new Scrollbar(width - 12, 5, 8, height-10, 0, 0xFF000000, 0xFFFFFFFF, 1, this::onScrollbar));
         
-        this.addButton(new Button(0, this.height - 12, this.width / 12, 12, font, 0, 0xFF000000, 0x7FFFFFFF, 0xFFFFFF, new TranslatableText("jsmacros.back"), (btn) -> this.onClose()));
+        this.addButton(new Button(0, this.height - 12, this.width / 12, 12, fontRendererObj, 0, 0xFF000000, 0x7FFFFFFF, 0xFFFFFF, new ChatComponentTranslation("jsmacros.back"), (btn) -> this.onClose()));
     }
 
     public void addContainer(BaseScriptContext<?> t) {
@@ -45,13 +45,12 @@ public class CancelScreen extends BaseScreen {
             running.sort(new RTCSort());
             s.setScrollPages(running.size() * 15 / (double) (height - 20));
         }
-            running.add(new RunningContextContainer(10, topScroll + running.size() * 15, width - 26, 13, font, this, t));
+            running.add(new RunningContextContainer(10, topScroll + running.size() * 15, width - 26, 13, fontRendererObj, this, t));
     }
 
     public void removeContainer(RunningContextContainer t) {
-        for (AbstractButtonWidget b : t.getButtons()) {
-            buttons.remove(b);
-            children.remove(b);
+        for (GuiButton b : t.getButtons()) {
+            buttonList.remove(b);
         }
         running.remove(t);
         s.setScrollPages(running.size() * 15 / (double)(height - 20));
@@ -74,7 +73,7 @@ public class CancelScreen extends BaseScreen {
     }
     
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(int mouseX, int mouseY, int amount) {
         s.mouseDragged(mouseX, mouseY, 0, 0, -amount * 2);
         return super.mouseScrolled(mouseX, mouseY, amount);
     }
@@ -92,16 +91,14 @@ public class CancelScreen extends BaseScreen {
         for (BaseScriptContext<?> t : tl) {
             addContainer(t);
         }
-        
-        for (AbstractButtonWidget b : ImmutableList.copyOf(this.buttons)) {
-            b.render(mouseX, mouseY, delta);
+
+        for (GuiButton b : ImmutableList.copyOf(this.buttonList)) {
+            b.drawButton(mc, mouseX, mouseY);
         }
     }
-
-    @Override
+    
     public void removed() {
-        assert minecraft != null;
-        minecraft.keyboard.enableRepeatEvents(false);
+        Keyboard.enableRepeatEvents(false);
     }
 
     @Override

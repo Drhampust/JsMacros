@@ -1,7 +1,7 @@
 package xyz.wagyourtail.jsmacros.client.gui.containers;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.text.LiteralText;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.ChatComponentText;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import xyz.wagyourtail.jsmacros.client.gui.elements.Button;
 import xyz.wagyourtail.jsmacros.client.gui.screens.CancelScreen;
@@ -47,10 +47,10 @@ public class RunningContextContainer extends MultiElementContainer<CancelScreen>
                     fill(x+width-101, y, x+width-100, y+height, 0xFFFFFFFF);
                     fill(x+height, y, x+height+1, y+height, 0xFFFFFFFF);
                     // border
-                    fill(x, y, x + width, y + 1, 0xFFFFFFFF);
-                    fill(x, y + height - 1, x + width, y + height, 0xFFFFFFFF);
-                    fill(x, y + 1, x + 1, y + height - 1, 0xFFFFFFFF);
-                    fill(x + width - 1, y + 1, x + width, y + height - 1, 0xFFFFFFFF);
+                    drawRect(x, y, x + width, y + 1, 0xFFFFFFFF);
+                    drawRect(x, y + height - 1, x + width, y + height, 0xFFFFFFFF);
+                    drawRect(x, y + 1, x + 1, y + height - 1, 0xFFFFFFFF);
+                    drawRect(x + width - 1, y + 1, x + width, y + height - 1, 0xFFFFFFFF);
                 }
             } else {
                 parent.removeContainer(this);

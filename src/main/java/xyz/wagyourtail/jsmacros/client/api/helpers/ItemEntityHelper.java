@@ -1,14 +1,14 @@
 package xyz.wagyourtail.jsmacros.client.api.helpers;
 
-import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.item.EntityItem;
 
-public class ItemEntityHelper extends EntityHelper<ItemEntity> {
-    public ItemEntityHelper(ItemEntity e) {
+public class ItemEntityHelper extends EntityHelper<EntityItem> {
+    public ItemEntityHelper(EntityItem e) {
         super(e);
     }
 
     public ItemStackHelper getContainedItemStack() {
-        return new ItemStackHelper(base.getStack());
+        return new ItemStackHelper(base.getEntityItem());
     }
 
     @Override

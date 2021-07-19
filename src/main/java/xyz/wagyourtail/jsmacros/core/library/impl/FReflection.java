@@ -6,7 +6,10 @@ import xyz.wagyourtail.jsmacros.core.library.Library;
 import xyz.wagyourtail.jsmacros.core.classes.Mappings;
 import xyz.wagyourtail.jsmacros.core.library.PerExecLibrary;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

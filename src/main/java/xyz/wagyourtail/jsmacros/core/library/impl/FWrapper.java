@@ -1,7 +1,6 @@
 package xyz.wagyourtail.jsmacros.core.library.impl;
 
 import org.graalvm.polyglot.Context;
-import xyz.wagyourtail.doclet.DocletReplaceParams;
 import xyz.wagyourtail.jsmacros.core.Core;
 import xyz.wagyourtail.jsmacros.core.MethodWrapper;
 import xyz.wagyourtail.jsmacros.core.language.BaseLanguage;
@@ -68,7 +67,6 @@ public class FWrapper extends PerExecLanguageLibrary<Context> implements IFWrapp
      * @since 1.3.2
      */
     @Override
-    @DocletReplaceParams("c: (arg0?: A, arg1?: B) => R | void")
     public <A, B, R> MethodWrapper<A, B, R, BaseScriptContext<Context>> methodToJava(Function<Object[], Object> c) {
         return new JSMethodWrapper<>(c, true);
     }
@@ -81,7 +79,6 @@ public class FWrapper extends PerExecLanguageLibrary<Context> implements IFWrapp
      * @since 1.3.2
      */
     @Override
-    @DocletReplaceParams("c: (arg0?: A, arg1?: B) => R | void")
     public <A, B, R> MethodWrapper<A, B, R, BaseScriptContext<Context>> methodToJavaAsync(Function<Object[], Object> c) {
         return new JSMethodWrapper<>(c, false);
     }
@@ -283,12 +280,12 @@ public class FWrapper extends PerExecLanguageLibrary<Context> implements IFWrapp
 
         @Override
         public boolean test(T t) {
-            return (boolean) apply(t, null);
+            return (Boolean) apply(t, null);
         }
 
         @Override
         public boolean test(T t, U u) {
-            return (boolean) apply(t, u);
+            return (Boolean) apply(t, u);
         }
 
         @Override
@@ -298,7 +295,7 @@ public class FWrapper extends PerExecLanguageLibrary<Context> implements IFWrapp
 
         @Override
         public int compare(T o1, T o2) {
-            return (int) apply(o1, (U) o2);
+            return (Integer) apply(o1, (U) o2);
         }
 
         @Override

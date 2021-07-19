@@ -13,14 +13,14 @@ import java.util.List;
 
 public class EventMacrosScreen extends MacroScreen {
     
-    public EventMacrosScreen(Screen parent) {
+    public EventMacrosScreen(GuiScreen parent) {
         super(parent);
         this.parent = parent;
     }
     
     @Override
-    protected void init() {
-        super.init();
+    public void initGui() {
+        super.initGui();
         eventScreen.setColor(0x4FFFFFFF);
         
         keyScreen.onPress = (btn) -> this.openParent();

@@ -1,18 +1,11 @@
 package xyz.wagyourtail.jsmacros.client.api.helpers;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 import xyz.wagyourtail.jsmacros.client.access.IMinecraftClient;
 import xyz.wagyourtail.jsmacros.client.api.sharedclasses.PositionCommon;
 import xyz.wagyourtail.jsmacros.core.Core;
@@ -25,8 +18,8 @@ import java.util.concurrent.Semaphore;
  * @since 1.0.3
  */
 @SuppressWarnings("unused")
-public class ClientPlayerEntityHelper<T extends ClientPlayerEntity> extends PlayerEntityHelper<T> {
-    protected final MinecraftClient mc = MinecraftClient.getInstance();
+public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEntityHelper<T> {
+    protected final Minecraft mc = Minecraft.getMinecraft();
 
     public ClientPlayerEntityHelper(T e) {
         super(e);
@@ -39,14 +32,11 @@ public class ClientPlayerEntityHelper<T extends ClientPlayerEntity> extends Play
      * @since 1.0.3
      */
     public ClientPlayerEntityHelper<T> lookAt(double yaw, double pitch) {
-        pitch = MathHelper.clamp(pitch, -90.0F, 90.0F);
-        base.prevPitch = base.pitch;
-        base.prevYaw = base.yaw;
-        base.pitch = (float)pitch;
-        base.yaw = MathHelper.wrapDegrees((float)yaw);
-        if (base.getVehicle() != null) {
-            base.getVehicle().onPassengerLookAround(base);
-        }
+        pitch = MathHelper.clamp_double(pitch, -90.0D, 90.0D);
+        base.prevRotationPitch = base.rotationPitch;
+        base.prevRotationYaw = base.rotationYaw;
+        base.rotationPitch = (float) pitch;
+        base.rotationYaw = (float) MathHelper.wrapAngleTo180_double(yaw);
         return this;
     }
 
@@ -60,7 +50,7 @@ public class ClientPlayerEntityHelper<T extends ClientPlayerEntity> extends Play
      * @since 1.2.8
      */
     public ClientPlayerEntityHelper<T> lookAt(double x, double y, double z) {
-        PositionCommon.Vec3D vec = new PositionCommon.Vec3D(base.x, base.y + base.getEyeHeight(base.getPose()), base.z, x, y, z);
+        PositionCommon.Vec3D vec = new PositionCommon.Vec3D(base.posX, base.posY + base.getEyeHeight(), base.posZ, x, y, z);
         lookAt(vec.getYaw(), vec.getPitch());
         return this;
     }
@@ -314,7 +304,7 @@ public class ClientPlayerEntityHelper<T extends ClientPlayerEntity> extends Play
      * @since 1.1.2
      */
     public int getFoodLevel() {
-        return base.getHungerManager().getFoodLevel();
+        return base.getFoodStats().getFoodLevel();
     }
 
 

@@ -10,25 +10,27 @@ import xyz.wagyourtail.jsmacros.core.language.EventContainer;
 
 public class KeyListener extends BaseListener {
     private int mods;
-    private String key;
+    private int key;
     
     public KeyListener(ScriptTrigger macro, Core runner) {
         super(macro, runner);
-        StringBuilder mods = new StringBuilder();
         this.mods = 0;
         try {
             String[] comb = macro.event.split("\\+");
             int i = 0;
             for (String key : comb) {
-                if (++i == comb.length) this.key = key;
+                if (++i == comb.length) {
+                    if (key.equals("")) this.key = Keyboard.KEY_NONE;
+                    else this.key = Integer.parseInt(key);
+                }
                 else {
-                    if (i > 1) mods.append("+");
-                    mods.append(key);
+                    if (key.equals("")) this.mods = Keyboard.KEY_NONE;
+                    else this.mods = Integer.parseInt(key);
                 }
             }
-            this.mods = EventKey.getModInt(mods.toString());
         } catch(Exception e) {
-            key = InputUtil.UNKNOWN_KEYCODE.getName();
+            key = Keyboard.KEY_NONE;
+            mods = 0;
         }
     }
     
@@ -42,7 +44,7 @@ public class KeyListener extends BaseListener {
     
     private boolean check(EventKey event) {
         boolean keyState = event.action == 1;
-        if (event.key.equals(key) && (EventKey.getModInt(event.mods) & mods) == mods) {
+        if (event.key == key && (event.mods & mods) == mods) {
             switch(getRawTrigger().triggerType) {
                 case KEY_FALLING:
                     return !keyState;

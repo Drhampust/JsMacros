@@ -8,7 +8,7 @@ import java.util.Set;
 /**
  * @since 1.5.1
  */
-public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
+public class NBTElementHelper<T extends NBTBase> extends BaseHelper<T> {
 
     private NBTElementHelper(T base) {
         super(base);
@@ -18,14 +18,14 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public int getType() {
-        return base.getType();
+        return base.getId();
     }
 
     /**
      * @since 1.5.1
      */
     public boolean isNull() {
-        return base.getType() == 0;
+        return base.getId() == 0;
     }
 
 
@@ -33,7 +33,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public boolean isNumber() {
-        return base.getType() != 0 && base.getType() < 7;
+        return base.getId() != 0 && base.getId() < 7;
     }
 
 
@@ -41,7 +41,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public boolean isString() {
-        return base.getType() == 8;
+        return base.getId() == 8;
     }
 
 
@@ -49,7 +49,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public boolean isList() {
-        return base.getType() == 7 || base.getType() == 9 || base.getType() == 11 || base.getType() == 12;
+        return base.getId() == 7 || base.getId() == 9 || base.getId() == 11;
     }
 
 
@@ -57,7 +57,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public boolean isCompound() {
-        return base.getType() == 10;
+        return base.getId() == 10;
     }
 
 
@@ -67,7 +67,9 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
      * @since 1.5.1
      */
     public String asString() {
-        return base.asString();
+        if (base instanceof NBTTagString)
+            return ((NBTTagString)base).getString();
+        return base.toString();
     }
 
 
@@ -104,9 +106,9 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
     /**
      * @since 1.5.1
      */
-    public static NBTElementHelper<?> resolve(Tag element) {
+    public static NBTElementHelper<?> resolve(NBTBase element) {
         if (element == null) return null;
-        switch (element.getType()) {
+        switch (element.getId()) {
             case 0: //Tag.NULL_TYPE
                 return new NBTElementHelper<>(element);
             case 1: //Tag.BYTE_TYPE
@@ -115,14 +117,15 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
             case 4: //Tag.LONG_TYPE
             case 5: //Tag.FLOAT_TYPE
             case 6: //Tag.DOUBLE_TYPE
-                return new NBTNumberHelper((AbstractNumberTag) element);
+                return new NBTNumberHelper((NBTBase.NBTPrimitive) element);
             case 7: //Tag.BYTE_ARRAY_TYPE
+                return new NBTByteArrayHelper((NBTTagByteArray) element);
             case 9: //Tag.LIST_TYPE
+                return new NBTTagListHelper((NBTTagList) element);
             case 11: //Tag.INT_ARRAY_TYPE
-            case 12: //Tag.LONG_ARRAY_TYPE
-                return new NBTListHelper((AbstractListTag<?>) element);
+                return new NBTIntArrayHelper((NBTTagIntArray) element);
             case 10: //NbtElement.COMPOUND_TYPE
-                return new NBTCompoundHelper((CompoundTag) element);
+                return new NBTCompoundHelper((NBTTagCompound) element);
             case 8: //NbtElement.STRING_TYPE
         }
         return new NBTElementHelper<>(element);
@@ -131,9 +134,9 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
     /**
      * @since 1.5.1
      */
-    public static class NBTNumberHelper extends NBTElementHelper<AbstractNumberTag> {
+    public static class NBTNumberHelper extends NBTElementHelper<NBTBase.NBTPrimitive> {
 
-        private NBTNumberHelper(AbstractNumberTag base) {
+        private NBTNumberHelper(NBTBase.NBTPrimitive base) {
             super(base);
         }
 
@@ -190,16 +193,30 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          */
         public Number asNumber() {
-            return base.getNumber();
+            switch (base.getId()) {
+                case 1: //Tag.BYTE_TYPE
+                    return base.getByte();
+                case 2: //Tag.SHORT_TYPE
+                    return base.getShort();
+                case 3: //Tag.INT_TYPE
+                    return base.getInt();
+                case 4: //Tag.LONG_TYPE
+                    return base.getLong();
+                case 5: //Tag.FLOAT_TYPE
+                    return base.getFloat();
+                case 6: //Tag.DOUBLE_TYPE
+                    return base.getDouble();
+            }
+            return null;
         }
     }
 
     /**
      * @since 1.5.1
      */
-    public static class NBTListHelper extends NBTElementHelper<AbstractListTag<?>> {
+    public static abstract class NBTListHelper<T extends NBTBase> extends NBTElementHelper<T> {
 
-        private NBTListHelper(AbstractListTag<?> base) {
+        private NBTListHelper(T base) {
             super(base);
         }
 
@@ -207,16 +224,12 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          * @return
          */
-        public int length() {
-            return base.size();
-        }
+        public abstract int length();
 
         /**
          * @since 1.5.1
          */
-        public NBTElementHelper<?> get(int index) {
-            return resolve(base.get(index));
-        }
+        public abstract NBTElementHelper<?> get(int index);
 
 
         /**
@@ -228,12 +241,67 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
         }
     }
 
+    private static class NBTByteArrayHelper extends NBTListHelper<NBTTagByteArray> {
+
+        private NBTByteArrayHelper(NBTTagByteArray base) {
+            super(base);
+        }
+
+        @Override
+        public int length() {
+            return base.getByteArray().length;
+        }
+
+        @Override
+        public NBTElementHelper<?> get(int index) {
+            return new NBTNumberHelper(new NBTTagByte(base.getByteArray()[index]));
+        }
+
+
+    }
+
+    private static class NBTTagListHelper extends NBTListHelper<NBTTagList> {
+
+        private NBTTagListHelper(NBTTagList base) {
+            super(base);
+        }
+
+        @Override
+        public int length() {
+            return base.tagCount();
+        }
+
+        @Override
+        public NBTElementHelper<?> get(int index) {
+            return resolve(base.get(index));
+        }
+
+    }
+
+    private static class NBTIntArrayHelper extends NBTListHelper<NBTTagIntArray> {
+
+        private NBTIntArrayHelper(NBTTagIntArray base) {
+            super(base);
+        }
+
+        @Override
+        public int length() {
+            return base.getIntArray().length;
+        }
+
+        @Override
+        public NBTElementHelper<?> get(int index) {
+            return new NBTNumberHelper(new NBTTagInt(base.getIntArray()[index]));
+        }
+
+    }
+
     /**
      * @since 1.5.1
      */
-    public static class NBTCompoundHelper extends NBTElementHelper<CompoundTag> {
+    public static class NBTCompoundHelper extends NBTElementHelper<NBTTagCompound> {
 
-        private NBTCompoundHelper(CompoundTag base) {
+        private NBTCompoundHelper(NBTTagCompound base) {
             super(base);
         }
 
@@ -250,7 +318,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          */
         public int getType(String key) {
-            return base.getType(key);
+            return base.getTagId(key);
         }
 
 
@@ -258,7 +326,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          */
         public boolean has(String key) {
-            return base.contains(key);
+            return base.getKeySet().contains(key);
         }
 
 
@@ -266,7 +334,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          */
         public NBTElementHelper<?> get(String key) {
-            return resolve(base.get(key));
+            return resolve(base.getTag(key));
         }
 
 
@@ -274,7 +342,7 @@ public class NBTElementHelper<T extends Tag> extends BaseHelper<T> {
          * @since 1.5.1
          */
         public String asString(String key) {
-            return base.get(key).asString();
+            return base.getString(key);
         }
 
     }

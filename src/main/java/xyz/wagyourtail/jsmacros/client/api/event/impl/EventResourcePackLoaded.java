@@ -1,7 +1,7 @@
 package xyz.wagyourtail.jsmacros.client.api.event.impl;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.resource.ResourcePackProfile;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.ResourcePackRepository;
 import xyz.wagyourtail.jsmacros.core.event.BaseEvent;
 import xyz.wagyourtail.jsmacros.core.event.Event;
 
@@ -23,7 +23,7 @@ public class EventResourcePackLoaded implements BaseEvent {
 
     public EventResourcePackLoaded(boolean isGameStart) {
         this.isGameStart = isGameStart;
-        this.loadedPacks = MinecraftClient.getInstance().getResourcePackManager().getEnabledProfiles().stream().map(ResourcePackProfile::getName).collect(Collectors.toList());
+        this.loadedPacks = Minecraft.getMinecraft().getResourcePackRepository().getRepositoryEntries().stream().map(ResourcePackRepository.Entry::getResourcePackName).collect(Collectors.toList());
 
         profile.triggerEvent(this);
     }
