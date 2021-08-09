@@ -10,6 +10,7 @@ import xyz.wagyourtail.jsmacros.core.library.impl.classes.FileHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 /**
@@ -135,10 +136,9 @@ public class FFS extends PerExecLibrary {
      * @param patha path is relative to the script's folder.
      * @param pathb
      * @return a {@link java.lang.String String} of the combined path.
-     * @throws IOException
      */
-    public String combine(String patha, String pathb) throws IOException {
-        return Path.of(patha, pathb).toString();
+    public String combine(String patha, String pathb) {
+        return FileSystems.getDefault().getPath(patha).resolve(pathb).toString();
     }
     
     

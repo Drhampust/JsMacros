@@ -196,7 +196,7 @@ public class Mappings {
             Class<?> current = tClass;
             do {
                 inheritance.add(current);
-                inheritance.addAll(Arrays.stream(current.getInterfaces()).toList());
+                inheritance.addAll(Arrays.stream(current.getInterfaces()).collect(Collectors.toList()));
             } while ((current = current.getSuperclass()) != Object.class);
             inheritance.add(Object.class);
             return inheritance;
@@ -326,9 +326,9 @@ public class Mappings {
             findField(cls, fieldName).set(instance, fieldValue);
         }
 
-        private static final Pattern sigPart = Pattern.compile("[ZBCSIJFDV]|L(.+?);");
+        private final Pattern sigPart = Pattern.compile("[ZBCSIJFDV]|L(.+?);");
 
-        private static Class<?> getPrimitive(char c) {
+        private Class<?> getPrimitive(char c) {
             switch (c) {
                 case 'Z':
                     return boolean.class;
