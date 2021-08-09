@@ -1,8 +1,9 @@
 package xyz.wagyourtail.jsmacros.client.api.library.impl;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ConnectScreen;
-import net.minecraft.network.ServerAddress;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.GuiConnecting;
+import net.minecraft.client.multiplayer.ServerAddress;
+import net.minecraft.client.multiplayer.WorldClient;
 import xyz.wagyourtail.jsmacros.client.api.helpers.OptionsHelper;
 import xyz.wagyourtail.jsmacros.client.config.Profile;
 import xyz.wagyourtail.jsmacros.client.tick.TickSync;
@@ -43,7 +44,7 @@ public class FClient extends BaseLibrary {
      * @since 1.4.0
      */
     public void runOnMainThread(MethodWrapper<Object, Object, Object, ?> runnable) {
-        mc.execute(runnable);
+        mc.addScheduledTask(runnable);
     }
 
     /**
@@ -123,9 +124,10 @@ public class FClient extends BaseLibrary {
      * @param callback calls your method as a {@link java.util.function.Consumer Consumer}&lt;{@link java.lang.Boolean Boolean}&gt;
      */
     public void disconnect(MethodWrapper<Boolean, Object, Object, ?> callback) {
-        mc.execute(() -> {
-            boolean isWorld = mc.world != null;
-            if (isWorld) mc.world.disconnect();
+        mc.addScheduledTask(() -> {
+            boolean isWorld = mc.theWorld != null;
+            if (isWorld) mc.theWorld.sendQuittingDisconnectingPacket();
+            mc.loadWorld(null);
             if (callback != null) callback.accept(isWorld);
         });
     }
@@ -138,9 +140,9 @@ public class FClient extends BaseLibrary {
      * @since 1.6.0
      */
     public void shutdown() {
-        mc.execute(mc::scheduleStop);
+        mc.addScheduledTask(mc::shutdown);
 
-        if (!mc.isOnThread() && !Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
+        if (!mc.isCallingFromMinecraftThread() && !Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
             // Wait until the game stops
             while (true) {
                 try {
@@ -159,7 +161,7 @@ public class FClient extends BaseLibrary {
      * @throws InterruptedException
      */
     public void waitTick() throws InterruptedException {
-        if (mc.isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
+        if (mc.isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
             throw new IllegalThreadStateException("Attempted to wait on a thread that is currently joined to main!");
         }
         tickSynchronizer.waitTick();
@@ -174,7 +176,7 @@ public class FClient extends BaseLibrary {
      * @throws InterruptedException
      */
     public void waitTick(int i) throws InterruptedException {
-        if (mc.isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
+        if (mc.isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread())) {
             throw new IllegalThreadStateException("Attempted to wait on a thread that is currently joined to main!");
         }
         while (--i >= 0) {

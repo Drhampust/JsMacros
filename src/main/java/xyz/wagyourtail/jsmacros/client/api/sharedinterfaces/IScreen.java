@@ -252,5 +252,5 @@ public interface IScreen extends IDraw2D<IScreen> {
     /**
      * internal
      */
-    MethodWrapper<IScreen, Object, Object> getOnClose();
+    MethodWrapper<IScreen, Object, Object, ?> getOnClose();
 }

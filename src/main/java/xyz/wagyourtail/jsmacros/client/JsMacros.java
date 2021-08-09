@@ -39,8 +39,8 @@ public class JsMacros {
     
     public static final Core<Profile, EventRegistry> core = Core.createInstance(EventRegistry::new, Profile::new, configFolder, new File(configFolder, "Macros"), LOGGER);
 
-    @Override
-    public void onInitializeClient() {
+    @Mod.EventHandler
+    public void onInitializeClient(FMLInitializationEvent event) {
         try {
             core.config.addOptions("client", ClientConfigV2.class);
         } catch (IllegalAccessException | InstantiationException e) {
@@ -63,10 +63,38 @@ public class JsMacros {
         
         FakeFabricLoader.instance.loadEntries();
         MinecraftForge.EVENT_BUS.register(new ForgeEventListener());
+        final boolean[] first = {true};
         ((SimpleReloadableResourceManager) Minecraft.getMinecraft().getResourceManager()).registerReloadListener((e) -> {
-            new EventResourcePackLoaded(first);
-            first = false;
+            new EventResourcePackLoaded(first[0]);
+            first[0] = false;
         });
+    }
+
+    public static void openFile(File p_175282_1_)
+    {
+        try
+        {
+            Class<?> oclass = Class.forName("java.awt.Desktop");
+            Object object = oclass.getMethod("getDesktop", new Class[0]).invoke(null);
+            oclass.getMethod("open", File.class).invoke(object, p_175282_1_);
+        }
+        catch (Throwable throwable)
+        {
+            LOGGER.error("Couldn't open link", throwable);
+        }
+    }
+
+    public static void openURI(URI p_175282_1_) {
+        try
+        {
+            Class<?> oclass = Class.forName("java.awt.Desktop");
+            Object object = oclass.getMethod("getDesktop", new Class[0]).invoke(null);
+            oclass.getMethod("browse", URI.class).invoke(object, p_175282_1_);
+        }
+        catch (Throwable throwable)
+        {
+            LOGGER.error("Couldn't open link", throwable);
+        }
     }
     
     static public String getScreenName(GuiScreen s) {

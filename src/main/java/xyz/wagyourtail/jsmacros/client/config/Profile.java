@@ -1,8 +1,8 @@
 package xyz.wagyourtail.jsmacros.client.config;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.util.*;
 import xyz.wagyourtail.jsmacros.client.JsMacros;
 import xyz.wagyourtail.jsmacros.client.access.CustomClickEvent;
 import xyz.wagyourtail.jsmacros.client.access.IChatHud;
@@ -134,7 +134,7 @@ public class Profile extends BaseProfile {
                         }
                     }));
                 }
-                line.append(new LiteralText(" (" + head.location + ")").setStyle(locationStyle));
+                line.appendSibling(new ChatComponentText(" (" + head.location + ")").setChatStyle(locationStyle));
             }
             if ((head = head.next) != null) line.appendText("\n");
             text.appendSibling(line);

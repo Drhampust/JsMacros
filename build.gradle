@@ -169,45 +169,10 @@ processResources {
 }
 
 
-task generateTSDoc(type: Javadoc) {
-    source = sourceSets.main.allJava
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = new File(project.buildDir, "docs/typescript/headers/")
-    options.doclet = "xyz.wagyourtail.tsdoclet.Main"
-    options.docletpath new File(project.rootDir, "buildSrc/build/libs/buildSrc.jar")
-    options.addStringOption "v", version
-}
-
-task copyTSEnv(type: Copy, dependsOn: generateTSDoc) {
-    from new File(project.rootDir, "graalts")
-    into new File(project.buildDir, "docs/typescript")
-}
-
-task generateWebDoc(type: Javadoc) {
-    source = sourceSets.main.allJava
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = new File(project.buildDir, "docs/web/")
-    options.doclet = "xyz.wagyourtail.webdoclet.Main"
-    options.docletpath new File(project.rootDir, "buildSrc/build/libs/buildSrc.jar")
-    options.addStringOption "v", version
-    options.addStringOption "mcv", project.minecraft.version
-    options {
-		links 'https://docs.oracle.com/javase/8/docs/api/', 'https://logging.apache.org/log4j/2.x/log4j-api/apidocs/', 'https://javadoc.io/doc/com.neovisionaries/nv-websocket-client/latest/'
-	}
-}
-
-task copyWebDoc(type: Copy, dependsOn: generateWebDoc) {
-    from new File(project.rootDir, "webdoc")
-    into new File(project.buildDir, "docs/web")
-}
-
-task createDist(type: Copy, dependsOn: copyWebDoc) {
-    from(new File(project.buildDir, "docs"), new File(project.buildDir, "libs"))
+task createDist(type: Copy) {
+    from(new File(project.buildDir, "libs"))
     into new File(project.rootDir, "dist")
 }
-
-generatePyDoc.dependsOn(copyTSEnv)
-generateWebDoc.dependsOn(copyPyDoc)
 
 build.finalizedBy(createDist)
 

@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import xyz.wagyourtail.jsmacros.client.JsMacros;
 import xyz.wagyourtail.jsmacros.client.api.event.impl.*;
 import xyz.wagyourtail.jsmacros.client.api.library.impl.FClient;
 import xyz.wagyourtail.jsmacros.client.gui.screens.EditorScreen;
@@ -52,24 +53,13 @@ public class TickBasedEvents {
     public static boolean areEqualIgnoreDamage(ItemStack a, ItemStack b) {
         return (a == null && b == null) || (a != null && b != null && a.isItemEqual(b) && a.stackSize == b.stackSize && areTagsEqualIgnoreDamage(a, b));
     }
-    
-    public static void init() {
-        if (initialized) return;
-        initialized = true;
-        ClientTickEvents.END_CLIENT_TICK.register(mc -> {
 
-            if (JsMacros.keyBinding.wasPressed() && mc.currentScreen == null) {
-                mc.openScreen(JsMacros.prevScreen);
-            }
-
-            FClient.tickSynchronizer.tick();
-            
-            new EventTick();
-            new EventJoinedTick();
-        });
-    }
 
     public static void onTick(Minecraft mc) {
+
+        if (JsMacros.keyBinding.isPressed() && mc.currentScreen == null) {
+            mc.displayGuiScreen(JsMacros.prevScreen);
+        }
 
         FClient.tickSynchronizer.tick();
 

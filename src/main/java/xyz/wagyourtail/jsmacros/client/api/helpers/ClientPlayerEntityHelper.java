@@ -2,6 +2,7 @@ package xyz.wagyourtail.jsmacros.client.api.helpers;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MathHelper;
@@ -70,19 +71,19 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @param entity
      */
     public ClientPlayerEntityHelper<T> attack(EntityHelper<?> entity, boolean await) throws InterruptedException {
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
-        assert mc.interactionManager != null;
-        if (entity.getRaw() == mc.player) throw new AssertionError("Can't interact with self!");
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        assert mc.playerController != null;
+        if (entity.getRaw() == mc.thePlayer) throw new AssertionError("Can't interact with self!");
         if (joinedMain) {
-            mc.interactionManager.attackEntity(mc.player, entity.getRaw());
-            assert mc.player != null;
-            mc.player.swingHand(Hand.MAIN_HAND);
+            assert mc.thePlayer != null;
+            mc.thePlayer.swingItem();
+            mc.playerController.attackEntity(mc.thePlayer, entity.getRaw());
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
-                mc.interactionManager.attackEntity(mc.player, entity.getRaw());
-                assert mc.player != null;
-                mc.player.swingHand(Hand.MAIN_HAND);
+            mc.addScheduledTask(() -> {
+                assert mc.thePlayer != null;
+                mc.thePlayer.swingItem();
+                mc.playerController.attackEntity(mc.thePlayer, entity.getRaw());
                 wait.release();
             });
             wait.acquire();
@@ -113,18 +114,18 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @throws InterruptedException
      */
     public ClientPlayerEntityHelper<T> attack(int x, int y, int z, int direction, boolean await) throws InterruptedException {
-        assert mc.interactionManager != null;
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        assert mc.playerController != null;
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
-            mc.interactionManager.attackBlock(new BlockPos(x, y, z), Direction.values()[direction]);
-            assert mc.player != null;
-            mc.player.swingHand(Hand.MAIN_HAND);
+            assert mc.thePlayer != null;
+            mc.thePlayer.swingItem();
+            mc.playerController.clickBlock(new BlockPos(x, y, z), EnumFacing.values()[direction]);
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
-                mc.interactionManager.attackBlock(new BlockPos(x, y, z), Direction.values()[direction]);
-                assert mc.player != null;
-                mc.player.swingHand(Hand.MAIN_HAND);
+            mc.addScheduledTask(() -> {
+                assert mc.thePlayer != null;
+                mc.thePlayer.swingItem();
+                mc.playerController.clickBlock(new BlockPos(x, y, z), EnumFacing.values()[direction]);
                 wait.release();
             });
             wait.acquire();
@@ -149,22 +150,37 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @throws InterruptedException
      */
     public ClientPlayerEntityHelper<T> interactEntity(EntityHelper<?> entity, boolean offHand, boolean await) throws InterruptedException {
-        assert mc.interactionManager != null;
-        if (entity.getRaw() == mc.player) throw new AssertionError("Can't interact with self!");
-        Hand hand = offHand ? Hand.OFF_HAND : Hand.MAIN_HAND;
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        assert mc.playerController != null;
+        if (entity.getRaw() == mc.thePlayer) throw new AssertionError("Can't interact with self!");
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
-            ActionResult result = mc.interactionManager.interactEntity(mc.player, entity.getRaw(), hand);
-            assert mc.player != null;
-            if (result.isAccepted())
-                mc.player.swingHand(hand);
+            boolean result = mc.playerController.func_178894_a(mc.thePlayer, entity.getRaw(), mc.objectMouseOver) ||
+                mc.playerController.interactWithEntitySendPacket(mc.thePlayer, entity.getRaw());
+            assert mc.thePlayer != null;
+            if (!result) {
+                ItemStack itemstack1 = mc.thePlayer.inventory.getCurrentItem();
+
+                boolean result2 = !net.minecraftforge.event.ForgeEventFactory.onPlayerInteract(mc.thePlayer, net.minecraftforge.event.entity.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR, mc.theWorld, null, null).isCanceled();
+                if (result2 && itemstack1 != null && mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, itemstack1))
+                {
+                    mc.entityRenderer.itemRenderer.resetEquippedProgress2();
+                }
+            }
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
-                ActionResult result = mc.interactionManager.interactEntity(mc.player, entity.getRaw(), hand);
-                assert mc.player != null;
-                if (result.isAccepted())
-                    mc.player.swingHand(hand);
+            mc.addScheduledTask(() -> {
+                boolean result = mc.playerController.func_178894_a(mc.thePlayer, entity.getRaw(), mc.objectMouseOver) ||
+                    mc.playerController.interactWithEntitySendPacket(mc.thePlayer, entity.getRaw());
+                assert mc.thePlayer != null;
+                if (!result) {
+                    ItemStack itemstack1 = mc.thePlayer.inventory.getCurrentItem();
+
+                    boolean result2 = !net.minecraftforge.event.ForgeEventFactory.onPlayerInteract(mc.thePlayer, net.minecraftforge.event.entity.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR, mc.theWorld, null, null).isCanceled();
+                    if (result2 && itemstack1 != null && mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, itemstack1))
+                    {
+                        mc.entityRenderer.itemRenderer.resetEquippedProgress2();
+                    }
+                }
                 wait.release();
             });
             wait.acquire();
@@ -186,21 +202,26 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @param await
      */
     public ClientPlayerEntityHelper<T> interactItem(boolean offHand, boolean await) throws InterruptedException {
-        assert mc.interactionManager != null;
-        Hand hand = offHand ? Hand.OFF_HAND : Hand.MAIN_HAND;
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        assert mc.playerController != null;
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
-            ActionResult result = mc.interactionManager.interactItem(mc.player, mc.world, hand);
-            assert mc.player != null;
-            if (result.isAccepted())
-                mc.player.swingHand(hand);
+            ItemStack itemstack1 = mc.thePlayer.inventory.getCurrentItem();
+
+            boolean result = !net.minecraftforge.event.ForgeEventFactory.onPlayerInteract(mc.thePlayer, net.minecraftforge.event.entity.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR, mc.theWorld, null, null).isCanceled();
+            if (result && itemstack1 != null && mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, itemstack1))
+            {
+                mc.entityRenderer.itemRenderer.resetEquippedProgress2();
+            }
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
-                ActionResult result = mc.interactionManager.interactItem(mc.player, mc.world, hand);
-                assert mc.player != null;
-                if (result.isAccepted())
-                    mc.player.swingHand(hand);
+            mc.addScheduledTask(() -> {
+                ItemStack itemstack1 = mc.thePlayer.inventory.getCurrentItem();
+
+                boolean result = !net.minecraftforge.event.ForgeEventFactory.onPlayerInteract(mc.thePlayer, net.minecraftforge.event.entity.player.PlayerInteractEvent.Action.RIGHT_CLICK_AIR, mc.theWorld, null, null).isCanceled();
+                if (result && itemstack1 != null && mc.playerController.sendUseItem(mc.thePlayer, mc.theWorld, itemstack1))
+                {
+                    mc.entityRenderer.itemRenderer.resetEquippedProgress2();
+                }
                 wait.release();
             });
             wait.acquire();
@@ -221,25 +242,45 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
     }
 
     public ClientPlayerEntityHelper<T> interactBlock(int x, int y, int z, int direction, boolean offHand, boolean await) throws InterruptedException {
-        assert mc.interactionManager != null;
-        Hand hand = offHand ? Hand.OFF_HAND : Hand.MAIN_HAND;
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        assert mc.playerController != null;
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
-            ActionResult result = mc.interactionManager.interactBlock(mc.player, mc.world, hand,
-                new BlockHitResult(Vec3d.ZERO, Direction.values()[direction], new BlockPos(x, y, z), false)
-            );
-            assert mc.player != null;
-            if (result.isAccepted())
-                mc.player.swingHand(hand);
+            BlockPos blockpos = new BlockPos(x, y, z);
+            if (!mc.theWorld.isAirBlock(blockpos)) {
+                ItemStack itemstack = mc.thePlayer.getHeldItem();
+                int i = itemstack != null ? itemstack.stackSize : 0;
+                if (mc.playerController.onPlayerRightClick(mc.thePlayer, mc.theWorld, itemstack, blockpos, EnumFacing.values()[direction], new Vec3(x, y, z))) {
+                    mc.thePlayer.swingItem();
+                }
+                if (itemstack == null) {
+                    return this;
+                }
+                if (itemstack.stackSize == 0) {
+                    mc.thePlayer.inventory.mainInventory[mc.thePlayer.inventory.currentItem] = null;
+                } else if (itemstack.stackSize != i || mc.playerController.isInCreativeMode()) {
+                    mc.entityRenderer.itemRenderer.resetEquippedProgress();
+                }
+            }
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
-                ActionResult result = mc.interactionManager.interactBlock(mc.player, mc.world, hand,
-                    new BlockHitResult(Vec3d.ZERO, Direction.values()[direction], new BlockPos(x, y, z), false)
-                );
-                assert mc.player != null;
-                if (result.isAccepted())
-                    mc.player.swingHand(hand);
+            mc.addScheduledTask(() -> {
+                BlockPos blockpos = new BlockPos(x, y, z);
+                if (!mc.theWorld.isAirBlock(blockpos)) {
+                    ItemStack itemstack = mc.thePlayer.getHeldItem();
+                    int i = itemstack != null ? itemstack.stackSize : 0;
+                    if (mc.playerController.onPlayerRightClick(mc.thePlayer, mc.theWorld, itemstack, blockpos, EnumFacing.values()[direction], new Vec3(x, y, z))) {
+                        mc.thePlayer.swingItem();
+                    }
+                    if (itemstack == null) {
+                        wait.release();
+                        return;
+                    }
+                    if (itemstack.stackSize == 0) {
+                        mc.thePlayer.inventory.mainInventory[mc.thePlayer.inventory.currentItem] = null;
+                    } else if (itemstack.stackSize != i || mc.playerController.isInCreativeMode()) {
+                        mc.entityRenderer.itemRenderer.resetEquippedProgress();
+                    }
+                }
                 wait.release();
             });
             wait.acquire();
@@ -259,12 +300,12 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @param await
      */
     public ClientPlayerEntityHelper<T> interact(boolean await) throws InterruptedException {
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
             ((IMinecraftClient) mc).jsmacros_doItemUse();
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
+            mc.addScheduledTask(() -> {
                 ((IMinecraftClient) mc).jsmacros_doItemUse();
                 wait.release();
             });
@@ -285,12 +326,12 @@ public class ClientPlayerEntityHelper<T extends EntityPlayerSP> extends PlayerEn
      * @param await
      */
     public ClientPlayerEntityHelper<T> attack(boolean await) throws InterruptedException {
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
             ((IMinecraftClient) mc).jsmacros_doAttack();
         } else {
             Semaphore wait = new Semaphore(await ? 0 : 1);
-            mc.execute(() -> {
+            mc.addScheduledTask(() -> {
                 ((IMinecraftClient) mc).jsmacros_doAttack();
                 wait.release();
             });

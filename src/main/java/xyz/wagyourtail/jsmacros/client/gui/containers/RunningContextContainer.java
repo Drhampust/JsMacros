@@ -14,7 +14,7 @@ public class RunningContextContainer extends MultiElementContainer<CancelScreen>
     private Button cancelButton;
     public BaseScriptContext<?> t;
     
-    public RunningContextContainer(int x, int y, int width, int height, TextRenderer textRenderer, CancelScreen parent, BaseScriptContext<?> t) {
+    public RunningContextContainer(int x, int y, int width, int height, FontRenderer textRenderer, CancelScreen parent, BaseScriptContext<?> t) {
         super(x, y, width, height, textRenderer, parent);
         this.t = t;
         init();
@@ -23,7 +23,7 @@ public class RunningContextContainer extends MultiElementContainer<CancelScreen>
     @Override
     public void init() {
         super.init();
-        cancelButton = this.addButton(new Button(x+1, y+1, height - 2, height - 2, textRenderer, 0, 0xFF000000, 0x7FFFFFFF, 0xFFFFFF, new LiteralText("X"), (btn) -> {
+        cancelButton = this.addButton(new Button(x+1, y+1, height - 2, height - 2, textRenderer, 0, 0xFF000000, 0x7FFFFFFF, 0xFFFFFF, new ChatComponentText("X"), (btn) -> {
                 BaseScriptContext<?> ctx = t;
                 if (ctx != null && !ctx.isContextClosed())
                     ctx.closeContext();
@@ -42,10 +42,10 @@ public class RunningContextContainer extends MultiElementContainer<CancelScreen>
         try {
             if (t != null && !t.isContextClosed()) {
                 if (this.visible) {
-                    drawCenteredString(textRenderer, textRenderer.trimToWidth(t.getMainThread().getName(), width - 105 - height), x + (width - 105 - height) / 2 + height + 4, y+2, 0xFFFFFF);
-                    drawCenteredString(textRenderer, textRenderer.trimToWidth(DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - t.startTime), 100), x+width - 50 + height, y+2, 0xFFFFFF);
-                    fill(x+width-101, y, x+width-100, y+height, 0xFFFFFFFF);
-                    fill(x+height, y, x+height+1, y+height, 0xFFFFFFFF);
+                    drawCenteredString(textRenderer, textRenderer.trimStringToWidth(t.getMainThread().getName(), width - 105 - height), x + (width - 105 - height) / 2 + height + 4, y+2, 0xFFFFFF);
+                    drawCenteredString(textRenderer, textRenderer.trimStringToWidth(DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - t.startTime), 100), x+width - 50 + height, y+2, 0xFFFFFF);
+                    drawRect(x+width-101, y, x+width-100, y+height, 0xFFFFFFFF);
+                    drawRect(x+height, y, x+height+1, y+height, 0xFFFFFFFF);
                     // border
                     drawRect(x, y, x + width, y + 1, 0xFFFFFFFF);
                     drawRect(x, y + height - 1, x + width, y + height, 0xFFFFFFFF);

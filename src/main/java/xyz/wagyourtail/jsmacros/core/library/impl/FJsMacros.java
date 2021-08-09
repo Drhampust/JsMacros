@@ -2,6 +2,7 @@ package xyz.wagyourtail.jsmacros.core.library.impl;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.util.Util;
+import xyz.wagyourtail.jsmacros.client.JsMacros;
 import xyz.wagyourtail.jsmacros.core.Core;
 import xyz.wagyourtail.jsmacros.core.MethodWrapper;
 import xyz.wagyourtail.jsmacros.core.config.BaseProfile;
@@ -18,6 +19,7 @@ import xyz.wagyourtail.jsmacros.core.library.Library;
 import xyz.wagyourtail.jsmacros.core.library.PerExecLibrary;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +145,7 @@ public class FJsMacros extends PerExecLibrary {
      * @param path relative to the script's folder.
      */
     public void open(String path) {
-        Util.getOperatingSystem().open(ctx.getContainedFolder().toPath().resolve(path).toFile());
+        JsMacros.openFile(ctx.getContainedFolder().toPath().resolve(path).toFile());
     }
 
     /**
@@ -153,8 +155,8 @@ public class FJsMacros extends PerExecLibrary {
      *
      * @throws MalformedURLException
      */
-    public void openUrl(String url) throws MalformedURLException {
-        Util.getOperatingSystem().open(new URL(url));
+    public void openURI(String url) throws MalformedURLException {
+        JsMacros.openURI(URI.create(url));
     }
     
     /**

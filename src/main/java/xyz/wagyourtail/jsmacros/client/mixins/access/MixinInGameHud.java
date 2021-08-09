@@ -18,7 +18,7 @@ class MixinInGameHud {
         synchronized (FHud.overlays) {
             for (IDraw2D<Draw2D> h : FHud.overlays) {
                 try {
-                    ((Draw2D)h).render(0, 0, 0);
+                    ((Draw2D)h).render();
                 } catch (Exception ignored) {}
             }
         }

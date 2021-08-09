@@ -1,11 +1,12 @@
 package xyz.wagyourtail.jsmacros.client.gui.screens;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 import org.graalvm.polyglot.Context;
+import org.lwjgl.input.Keyboard;
 import xyz.wagyourtail.jsmacros.client.gui.containers.RunningContextContainer;
 import xyz.wagyourtail.jsmacros.client.gui.elements.Button;
 import xyz.wagyourtail.jsmacros.client.gui.elements.Scrollbar;
@@ -26,8 +27,8 @@ public class CancelScreen extends BaseScreen {
     }
 
     @Override
-    public void init() {
-        super.init();
+    public void initGui() {
+        super.initGui();
         // force gc all currently closed contexts
         System.gc();
         topScroll = 10;
@@ -77,10 +78,10 @@ public class CancelScreen extends BaseScreen {
         s.mouseDragged(mouseX, mouseY, 0, 0, -amount * 2);
         return super.mouseScrolled(mouseX, mouseY, amount);
     }
-    
+
     @Override
-    public void render(int mouseX, int mouseY, float delta) {
-        this.renderBackground(0);
+    public void drawScreen(int mouseX, int mouseY, float delta) {
+        this.drawWorldBackground(0);
         List<BaseScriptContext<?>> tl = new ArrayList<>(Core.instance.getContexts());
         
         for (RunningContextContainer r : ImmutableList.copyOf(this.running)) {

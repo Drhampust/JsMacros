@@ -1,6 +1,6 @@
 package xyz.wagyourtail.jsmacros.client.listeners;
 
-import net.minecraft.client.util.InputUtil;
+import org.lwjgl.input.Keyboard;
 import xyz.wagyourtail.jsmacros.client.api.event.impl.EventKey;
 import xyz.wagyourtail.jsmacros.core.Core;
 import xyz.wagyourtail.jsmacros.core.config.ScriptTrigger;

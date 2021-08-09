@@ -432,17 +432,6 @@ public class Draw2D extends Gui implements IDraw2D<Draw2D> {
             }
         }
     }
-    
-    public void render(int mouseX, int mouseY, float delta) {
-        GlStateManager.pushMatrix();
-        synchronized (elements) {
-            Iterator<RenderCommon.RenderElement> iter = elements.stream().sorted(Comparator.comparingInt(RenderCommon.RenderElement::getZIndex)).iterator();
-            while (iter.hasNext()) {
-                iter.next().render(0, 0, 0);
-            }
-        }
-        GlStateManager.popMatrix();
-    }
 
     /**
      *
@@ -471,4 +460,17 @@ public class Draw2D extends Gui implements IDraw2D<Draw2D> {
         this.catchInit = catchInit;
         return this;
     }
+
+    @Override
+    public void render() {
+        GlStateManager.pushMatrix();
+        synchronized (elements) {
+            Iterator<RenderCommon.RenderElement> iter = elements.stream().sorted(Comparator.comparingInt(RenderCommon.RenderElement::getZIndex)).iterator();
+            while (iter.hasNext()) {
+                iter.next().render(0, 0, 0);
+            }
+        }
+        GlStateManager.popMatrix();
+    }
+
 }

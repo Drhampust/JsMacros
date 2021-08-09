@@ -161,15 +161,15 @@ public class ButtonWidgetHelper<T extends GuiButton> extends BaseHelper<T> imple
      * @since 1.3.1
      */
     public ButtonWidgetHelper<T> click(boolean await) throws InterruptedException {
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
-            base.mouseClicked(base.x, base.y, 0);
-            base.mouseReleased(base.x, base.y, 0);
+            base.mousePressed(Minecraft.getMinecraft(), base.xPosition, base.yPosition);
+            base.mouseReleased(base.xPosition, base.yPosition);
         } else {
             final Semaphore waiter = new Semaphore(await ? 0 : 1);
-            MinecraftClient.getInstance().execute(() -> {
-                base.mouseClicked(base.x, base.y, 0);
-                base.mouseReleased(base.x, base.y, 0);
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                base.mousePressed(Minecraft.getMinecraft(), base.xPosition, base.yPosition);
+                base.mouseReleased(base.xPosition, base.yPosition);
                 waiter.release();
             });
             waiter.acquire();

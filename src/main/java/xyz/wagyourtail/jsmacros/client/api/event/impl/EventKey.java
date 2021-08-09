@@ -27,8 +27,6 @@ public class EventKey implements BaseEvent {
         this.key = key;
         this.mods = mods;
         
-        if (keycode == InputUtil.UNKNOWN_KEY) return;
-        
         synchronized (FKeyBind.pressedKeys) {
             if (action == 1) FKeyBind.pressedKeys.add(key);
             else FKeyBind.pressedKeys.remove(key);

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.audio.SoundCategory;
+import net.minecraft.client.audio.SoundRegistry;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,6 +16,7 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraftforge.client.event.sound.SoundEvent;
 import xyz.wagyourtail.jsmacros.client.access.IPlayerListHud;
 import xyz.wagyourtail.jsmacros.client.api.helpers.*;
 import xyz.wagyourtail.jsmacros.core.Core;
@@ -277,9 +280,9 @@ public class FWorld extends BaseLibrary {
      * @param pitch
      */
     public void playSound(String id, double volume, double pitch) {
-        SoundEvent sound = Registry.SOUND_EVENT.get(new Identifier(id));
+        ResourceLocation sound = new ResourceLocation(id);
         assert sound != null;
-        mc.execute(() -> mc.getSoundManager().play(PositionedSoundInstance.master(sound, (float) pitch, (float) volume)));
+        mc.addScheduledTask(() -> mc.getSoundHandler().playSound(new PositionedSoundRecord(sound, (float) volume, (float) pitch, 0, 0, 0)));
     }
     
     /**
@@ -293,10 +296,9 @@ public class FWorld extends BaseLibrary {
      * @param z
      */
     public void playSound(String id, double volume, double pitch, double x, double y, double z) {
-        assert mc.world != null;
-        SoundEvent sound = Registry.SOUND_EVENT.get(new Identifier(id));
+        ResourceLocation sound = new ResourceLocation(id);
         assert sound != null;
-        mc.execute(() -> mc.world.playSound(x, y, z, sound, SoundCategory.MASTER, (float) volume, (float) pitch, true));
+        mc.addScheduledTask(() -> mc.getSoundHandler().playSound(new PositionedSoundRecord(sound, (float) volume, (float) pitch, (float) x, (float) y, (float) z)));
     }
     
     /**

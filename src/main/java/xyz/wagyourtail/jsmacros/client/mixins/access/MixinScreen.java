@@ -33,6 +33,7 @@ import xyz.wagyourtail.jsmacros.core.MethodWrapper;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 @Mixin(GuiScreen.class)
 public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled {
@@ -45,7 +46,10 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
     @Unique private MethodWrapper<IScreen, Object, Object, ?> onInit;
     @Unique private MethodWrapper<String, Object, Object, ?> catchInit;
     @Unique private MethodWrapper<IScreen, Object, Object, ?> onClose;
-    
+
+    @Unique private Map<GuiButton, Consumer<GuiButton>> customButtons = new HashMap<>();
+    @Unique private Set<GuiTextField> customTextFields = new HashSet<>();
+
     @Shadow public int width;
     @Shadow public int height;
     @Shadow protected Minecraft mc;
@@ -443,7 +447,8 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
     
     @Override
     public TextFieldWidgetHelper addTextInput(int x, int y, int width, int height, int zIndex, String message, MethodWrapper<String, IScreen, Object, ?> onChange) {
-        TextFieldWidget field = new TextFieldWidget(this.font, x, y, width, height, message);
+        GuiTextField field = new GuiTextField(-999, fontRendererObj, x, y, width, height);
+        field.setText(message);
         if (onChange != null) {
             ((IGuiTextField)field).setOnChange(str -> {
                 try {
@@ -488,7 +493,7 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
     }
 
     @Override
-    public IScreen setOnMouseDrag(MethodWrapper<Vec2D, Integer, Object, ?> onMouseDrag) {
+    public IScreen setOnMouseDrag(MethodWrapper<PositionCommon.Vec2D, Integer, Object, ?> onMouseDrag) {
         this.onMouseDrag = onMouseDrag;
         return this;
     }
@@ -563,6 +568,9 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
         }
     }
 
+    @Unique int mouseX;
+    @Unique int mouseY;
+
     @Inject(at = @At("HEAD"), method = "mouseClicked")
     public void onMouseClicked(int mouseX, int mouseY, int button, CallbackInfo info) {
         if (onMouseDown != null) try {
@@ -575,7 +583,7 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
     @Inject(at = @At("HEAD"), method = "mouseClickMove")
     public void onMouseDragged(int mouseX, int mouseY, int button, long time, CallbackInfo ci) {
         if (onMouseDrag != null) try {
-            onMouseDrag.accept(new PositionCommon.Pos2D(mouseX, mouseY), button);
+            onMouseDrag.accept(new PositionCommon.Vec2D(mouseX, mouseY, button, time), button);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -665,7 +673,7 @@ public abstract class MixinScreen extends Gui implements IScreen, IMouseScrolled
     }
     
     @Override
-    public  MethodWrapper<IScreen, Object, Object> getOnClose() {
+    public  MethodWrapper<IScreen, Object, Object, ?> getOnClose() {
         return onClose;
     }
 

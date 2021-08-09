@@ -1,8 +1,11 @@
 package xyz.wagyourtail.jsmacros.client.api.helpers;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiTextField;
+import xyz.wagyourtail.jsmacros.client.access.IGuiTextField;
+import xyz.wagyourtail.jsmacros.client.api.sharedclasses.RenderCommon;
 import xyz.wagyourtail.jsmacros.core.Core;
+import xyz.wagyourtail.jsmacros.core.helpers.BaseHelper;
 
 import java.util.concurrent.Semaphore;
 
@@ -131,12 +134,12 @@ public class TextFieldWidgetHelper extends BaseHelper<GuiTextField> implements R
      * @throws InterruptedException
      */
     public TextFieldWidgetHelper setText(String text, boolean await) throws InterruptedException {
-        boolean joinedMain = MinecraftClient.getInstance().isOnThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
+        boolean joinedMain = Minecraft.getMinecraft().isCallingFromMinecraftThread() || Core.instance.profile.joinedThreadStack.contains(Thread.currentThread());
         if (joinedMain) {
             base.setText(text);
         } else {
             final Semaphore waiter = new Semaphore(await ? 0 : 1);
-            MinecraftClient.getInstance().execute(() -> {
+            Minecraft.getMinecraft().addScheduledTask(() -> {
                 base.setText(text);
                 waiter.release();
             });

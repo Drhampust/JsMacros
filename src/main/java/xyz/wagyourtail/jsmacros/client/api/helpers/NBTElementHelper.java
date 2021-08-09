@@ -311,7 +311,7 @@ public class NBTElementHelper<T extends NBTBase> extends BaseHelper<T> {
          * @return
          */
         public Set<String> getKeys() {
-            return base.getKeys();
+            return base.getKeySet();
         }
 
         /**
